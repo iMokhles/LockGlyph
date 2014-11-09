@@ -1,0 +1,10 @@
+{
+    entry = {
+	bundle = LockGlyphPrefs;
+	cell = PSLinkCell;
+	detail = LockGlyphPrefsListController;
+	icon = LockGlyphPrefs.png;
+	isController = 1;
+	label = LockGlyph;
+    };
+}

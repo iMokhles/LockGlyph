@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerCellClass</key>
+			<string>LockGlyphTitleCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string> </string>
+			<key>footerText</key>
+			<string>Use tick animation will make your unlock take longer. This will get tiring.</string>
+			<key>footerAlignment</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.evilgoldfish.lockglyph</string>
+			<key>key</key>
+			<string>enabled</string>
+			<key>label</key>
+			<string>Enabled</string>
+			<key>PostNotification</key>
+			<string>com.evilgoldfish.lockglyph.settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.evilgoldfish.lockglyph</string>
+			<key>key</key>
+			<string>useUnlockSound</string>
+			<key>label</key>
+			<string>Enable unlock sound</string>
+			<key>PostNotification</key>
+			<string>com.evilgoldfish.lockglyph.settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.evilgoldfish.lockglyph</string>
+			<key>key</key>
+			<string>useTickAnimation</string>
+			<key>label</key>
+			<string>Use tick animation</string>
+			<key>PostNotification</key>
+			<string>com.evilgoldfish.lockglyph.settingschanged</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Developer</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Follow @evilgoldfish01 on Twitter</string>
+			<key>id</key>
+			<string>twitterButton</string>
+			<key>action</key>
+			<string>twitterButton</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>LockGlyph</string>
+</dict>
+</plist>
