@@ -1,4 +1,5 @@
 #import <Preferences/Preferences.h>
+#import "ColorPicker/HRColorPickerView.h"
 
 @protocol PreferencesTableCustomView
 - (id)initWithSpecifier:(id)arg1;
@@ -87,6 +88,21 @@
     return self;
 }
 
+@end
+
+@interface LockGlyphColorPickerController: UIViewController {
+}
+@end
+
+@implementation LockGlyphColorPickerController
+-(void)didMoveToWindow {
+	HRColorPickerView *colorPickerView = [[HRColorPickerView alloc] init];
+	colorPickerView.color = [UIColor redColor];
+	[colorPickerView addTarget:self
+                    action:@selector(action:)
+          forControlEvents:UIControlEventValueChanged];
+	[self.view addSubview:colorPickerView];
+}
 @end
 
 // vim:ft=objc
