@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioServices.h>
 #import "PKGlyphView.h"
+#import "SBLockScreenManager.h"
 
 UIView *lockView = nil;
 PKGlyphView *fingerglyph = nil;
@@ -12,16 +13,6 @@ BOOL usingGlyph;
 BOOL enabled;
 BOOL useUnlockSound;
 BOOL useTickAnimation;
-
-@interface SBLockScreenManager : NSObject
-+ (id)sharedInstance;
-- (void)unlockUIFromSource:(int)arg1 withOptions:(id)arg2;
-- (void)_finishUIUnlockFromSource:(int)arg1 withOptions:(id)arg2;
-- (void)_bioAuthenticated:(id)arg1;
-@property(nonatomic, getter=isUIUnlocking) _Bool UIUnlocking;
-@property(readonly) _Bool isWaitingToLockUI;
-@property(readonly) _Bool isUILocked;
-@end
 
 static void loadPreferences() {
     CFPreferencesAppSynchronize(CFSTR("com.evilgoldfish.lockglyph"));
