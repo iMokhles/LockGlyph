@@ -1,4 +1,6 @@
 #import <Preferences/Preferences.h>
+#import <Preferences/PSViewController.h>
+#import <Preferences/PSDetailController.h>
 #import "ColorPicker/HRColorPickerView.h"
 
 @protocol PreferencesTableCustomView
@@ -90,18 +92,26 @@
 
 @end
 
-@interface LockGlyphColorPickerController: UIViewController {
+@interface LockGlyphColorPickerController: PSDetailController {
 }
 @end
 
 @implementation LockGlyphColorPickerController
--(void)didMoveToWindow {
-	HRColorPickerView *colorPickerView = [[HRColorPickerView alloc] init];
-	colorPickerView.color = [UIColor redColor];
-	[colorPickerView addTarget:self
-                    action:@selector(action:)
-          forControlEvents:UIControlEventValueChanged];
-	[self.view addSubview:colorPickerView];
+-(id)initForContentSize:(CGSize)size {
+	if ([PSViewController instancesRespondToSelector:@selector(initForContentSize:)])
+		self = [super initForContentSize:size];
+	else
+		self = [super init];
+	if (self) {
+		HRColorPickerView *colorPickerView = [[HRColorPickerView alloc] init];
+		colorPickerView.color = [UIColor redColor];
+		//[colorPickerView addTarget:self
+        //            action:@selector(action:)
+        //  forControlEvents:UIControlEventValueChanged];
+		[colorPickerView setFrame:CGRectMake(100,100,640,1136)];
+		[self.view addSubview:colorPickerView];
+	}
+	return self;
 }
 @end
 

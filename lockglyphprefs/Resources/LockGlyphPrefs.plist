@@ -64,6 +64,18 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>LockGlyphColorPickerController</string>
+			<key>defaults</key>
+			<string>com.evilgoldfish.lockglyph</string>
+			<key>key</key>
+			<string>useTickAnimation</string>
+			<key>label</key>
+			<string>Use tick animation</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>Developer</string>
