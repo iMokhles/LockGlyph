@@ -18,7 +18,7 @@ static void loadPreferences() {
     CFPreferencesAppSynchronize(CFSTR("com.evilgoldfish.lockglyph"));
     enabled = !CFPreferencesCopyAppValue(CFSTR("enabled"), CFSTR("com.evilgoldfish.lockglyph")) ? YES : [(id)CFPreferencesCopyAppValue(CFSTR("enabled"), CFSTR("com.evilgoldfish.lockglyph")) boolValue];
  	useUnlockSound = !CFPreferencesCopyAppValue(CFSTR("useUnlockSound"), CFSTR("com.evilgoldfish.lockglyph")) ? YES : [(id)CFPreferencesCopyAppValue(CFSTR("useUnlockSound"), CFSTR("com.evilgoldfish.lockglyph")) boolValue];
- 	useTickAnimation = !CFPreferencesCopyAppValue(CFSTR("useTickAnimation"), CFSTR("com.evilgoldfish.lockglyph")) ? YES : [(id)CFPreferencesCopyAppValue(CFSTR("useTickAnimation"), CFSTR("com.evilgoldfish.lockglyph")) boolValue];
+ 	useTickAnimation = !CFPreferencesCopyAppValue(CFSTR("useTickAnimation"), CFSTR("com.evilgoldfish.lockglyph")) ? NO : [(id)CFPreferencesCopyAppValue(CFSTR("useTickAnimation"), CFSTR("com.evilgoldfish.lockglyph")) boolValue];
 }
 
 %hook SBLockScreenScrollView
@@ -33,7 +33,7 @@ static void loadPreferences() {
 		//fingerglyph.secondaryColor = [UIColor redColor];
 		//fingerglyph.primaryColor = [UIColor whiteColor];
 		CGRect screen = [[UIScreen mainScreen] bounds];
-		fingerglyph.center = CGPointMake(screen.size.width+CGRectGetMidX(screen),screen.size.height-80);
+		fingerglyph.center = CGPointMake(screen.size.width+CGRectGetMidX(screen),screen.size.height-60);
 		[self addSubview:fingerglyph];
 	}
 }
@@ -78,7 +78,7 @@ static void loadPreferences() {
 		[lockView performSelectorOnMainThread:@selector(performTickAnimation) withObject:nil waitUntilDone:YES];
 		double delayInSeconds = 1.3;
 		if (!useTickAnimation) {
-			delayInSeconds = 0.2;
+			delayInSeconds = 0.3;
 		}
 		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
 		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){ 
@@ -87,7 +87,7 @@ static void loadPreferences() {
 		fingerAlreadyFailed = NO;
 		usingGlyph = NO;
 		lockView = nil;
-		[fingerglyph removeFromSuperview];
+		//[fingerglyph removeFromSuperview];
 		fingerglyph = nil;
 		%orig; });
 	} else {
