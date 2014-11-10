@@ -3,6 +3,15 @@
 #import "PKGlyphView.h"
 #import "SBLockScreenManager.h"
 
+#define TouchIDFingerDown  1
+#define TouchIDFingerUp    0
+#define TouchIDFingerHeld  2
+#define TouchIDMatched     3
+#define TouchIDNotMatched  10
+
+#define kDefaultPrimaryColor [[UIColor alloc] initWithRed:188/255.0f green:188/255.0f blue:188/255.0f alpha:1.0f]
+#define kDefaultSecondaryColor [[UIColor alloc] initWithRed:119/255.0f green:119/255.0f blue:119/255.0f alpha:1.0f]
+
 UIView *lockView = nil;
 PKGlyphView *fingerglyph = nil;
 SystemSoundID unlockSound;
@@ -13,29 +22,46 @@ BOOL usingGlyph;
 BOOL enabled;
 BOOL useUnlockSound;
 BOOL useTickAnimation;
+UIColor *primaryColor;
+UIColor *secondaryColor;
+
+static UIColor* parseColorFromPreferences(NSString* string) {
+	NSArray *prefsarray = [string componentsSeparatedByString: @":"];
+	NSString *hexString = [prefsarray objectAtIndex:0];
+	double alpha = [[prefsarray objectAtIndex:1] doubleValue];
+
+	unsigned rgbValue = 0;
+    NSScanner *scanner = [NSScanner scannerWithString:hexString];
+    [scanner setScanLocation:1]; // bypass '#' character
+    [scanner scanHexInt:&rgbValue];
+    return [[UIColor alloc] initWithRed:((rgbValue & 0xFF0000) >> 16)/255.0 green:((rgbValue & 0xFF00) >> 8)/255.0 blue:(rgbValue & 0xFF)/255.0 alpha:alpha];
+}
 
 static void loadPreferences() {
     CFPreferencesAppSynchronize(CFSTR("com.evilgoldfish.lockglyph"));
     enabled = !CFPreferencesCopyAppValue(CFSTR("enabled"), CFSTR("com.evilgoldfish.lockglyph")) ? YES : [(id)CFPreferencesCopyAppValue(CFSTR("enabled"), CFSTR("com.evilgoldfish.lockglyph")) boolValue];
  	useUnlockSound = !CFPreferencesCopyAppValue(CFSTR("useUnlockSound"), CFSTR("com.evilgoldfish.lockglyph")) ? YES : [(id)CFPreferencesCopyAppValue(CFSTR("useUnlockSound"), CFSTR("com.evilgoldfish.lockglyph")) boolValue];
  	useTickAnimation = !CFPreferencesCopyAppValue(CFSTR("useTickAnimation"), CFSTR("com.evilgoldfish.lockglyph")) ? NO : [(id)CFPreferencesCopyAppValue(CFSTR("useTickAnimation"), CFSTR("com.evilgoldfish.lockglyph")) boolValue];
+ 	primaryColor = !CFPreferencesCopyAppValue(CFSTR("primaryColor"), CFSTR("com.evilgoldfish.lockglyph")) ? kDefaultPrimaryColor : parseColorFromPreferences((id)CFPreferencesCopyAppValue(CFSTR("primaryColor"), CFSTR("com.evilgoldfish.lockglyph")));
+ 	secondaryColor = !CFPreferencesCopyAppValue(CFSTR("secondaryColor"), CFSTR("com.evilgoldfish.lockglyph")) ? kDefaultSecondaryColor : parseColorFromPreferences((id)CFPreferencesCopyAppValue(CFSTR("secondaryColor"), CFSTR("com.evilgoldfish.lockglyph")));
 }
 
 %hook SBLockScreenScrollView
 
--(void)didMoveToWindow {
-	%orig;
+-(UIView *)initWithFrame:(CGRect)frame {
+	lockView = %orig;
 	if (enabled) {
 		lockView = (UIView *)self;
 		usingGlyph = YES;
 		fingerglyph = [[%c(PKGlyphView) alloc] initWithStyle:1];
 		fingerglyph.delegate = (id<PKGlyphViewDelegate>)self;
-		//fingerglyph.secondaryColor = [UIColor redColor];
-		//fingerglyph.primaryColor = [UIColor whiteColor];
+		fingerglyph.secondaryColor = secondaryColor;
+		fingerglyph.primaryColor = primaryColor;
 		CGRect screen = [[UIScreen mainScreen] bounds];
 		fingerglyph.center = CGPointMake(screen.size.width+CGRectGetMidX(screen),screen.size.height-60);
 		[self addSubview:fingerglyph];
 	}
+	return lockView;
 }
 
 %new(v@:)
@@ -83,13 +109,16 @@ static void loadPreferences() {
 		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
 		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){ 
 			//AudioServicesDisposeSystemSoundID(unlockSound);
-		fingerglyph.delegate = nil;
-		fingerAlreadyFailed = NO;
-		usingGlyph = NO;
-		lockView = nil;
-		//[fingerglyph removeFromSuperview];
-		fingerglyph = nil;
-		%orig; });
+			if (!useTickAnimation && useUnlockSound) {
+				AudioServicesPlaySystemSound(unlockSound);
+			}
+			fingerglyph.delegate = nil;
+			fingerAlreadyFailed = NO;
+			usingGlyph = NO;
+			lockView = nil;
+			//[fingerglyph removeFromSuperview];
+			fingerglyph = nil;
+			%orig; });
 	} else {
 		%orig;
 	}
@@ -99,7 +128,13 @@ static void loadPreferences() {
 	%orig;
 	//start animation
 	if (lockView && self.isUILocked && enabled) {
-		[lockView performSelectorOnMainThread:@selector(performFingerScanAnimation) withObject:nil waitUntilDone:YES];
+		switch (arg2) {
+			case TouchIDFingerDown:
+				[lockView performSelectorOnMainThread:@selector(performFingerScanAnimation) withObject:nil waitUntilDone:YES];
+				break;
+			case TouchIDFingerUp:
+				// revert to state 0 here
+		}
 	}
 }
 

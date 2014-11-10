@@ -63,17 +63,49 @@
 			<string>com.evilgoldfish.lockglyph.settingschanged</string>
 		</dict>
 		<dict>
-			<key>cell</key>
-			<string>PSLinkCell</string>
-			<key>detail</key>
-			<string>LockGlyphColorPickerController</string>
-			<key>defaults</key>
-			<string>com.evilgoldfish.lockglyph</string>
-			<key>key</key>
-			<string>useTickAnimation</string>
-			<key>label</key>
-			<string>Use tick animation</string>
-		</dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>cellClass</key>
+            <string>PFColorCell</string>
+            <key>label</key>
+            <string>Idle colour</string>
+            <key>color_defaults</key>
+            <string>com.evilgoldfish.lockglyph</string>
+            <key>color_key</key>
+            <string>secondaryColor</string>
+            <key>title</key>
+            <string>Idle colour</string>
+            <key>color_fallback</key>
+            <string>#777777</string>
+            <key>usesRGB</key>
+            <true/>
+            <key>usesAlpha</key>
+            <true/>
+            <key>PostNotification</key>
+			<string>com.evilgoldfish.lockglyph.settingschanged</string>
+        </dict>
+        <dict>
+            <key>cell</key>
+            <string>PSLinkCell</string>
+            <key>cellClass</key>
+            <string>PFColorCell</string>
+            <key>label</key>
+            <string>Scanning color</string>
+            <key>color_defaults</key>
+            <string>com.evilgoldfish.lockglyph</string>
+            <key>color_key</key>
+            <string>primaryColor</string>
+            <key>title</key>
+            <string>Scanning color</string>
+            <key>color_fallback</key>
+            <string>#BCBCBC</string>
+            <key>usesRGB</key>
+            <true/>
+            <key>usesAlpha</key>
+            <true/>
+            <key>PostNotification</key>
+			<string>com.evilgoldfish.lockglyph.settingschanged</string>
+        </dict>
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
