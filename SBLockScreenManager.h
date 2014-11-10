@@ -7,3 +7,6 @@
 @property(readonly) _Bool isWaitingToLockUI;
 @property(readonly) _Bool isUILocked;
 @end
+
+@interface SBLockScreenManager (lockglyph) <AVAudioPlayerDelegate>
+@end

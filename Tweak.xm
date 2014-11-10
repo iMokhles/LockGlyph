@@ -1,7 +1,63 @@
 #import <UIKit/UIKit.h>
-#import <AudioToolbox/AudioServices.h>
+#import <AVFoundation/AVFoundation.h>
+#import <AudioToolbox/AudioToolbox.h>
+#import <CoreMedia/CoreMedia.h>
+#include <objc/runtime.h>
+#import <MediaPlayer/MediaPlayer.h>
 #import "PKGlyphView.h"
 #import "SBLockScreenManager.h"
+
+@interface NSTimer (block)
++(id)scheduledTimerWithTimeInterval:(NSTimeInterval)inTimeInterval block:(void (^)())inBlock repeats:(BOOL)inRepeats;
++(id)timerWithTimeInterval:(NSTimeInterval)inTimeInterval block:(void (^)())inBlock repeats:(BOOL)inRepeats;
+@end
+
+@implementation NSTimer (block)
+
++(id)scheduledTimerWithTimeInterval:(NSTimeInterval)inTimeInterval block:(void (^)())inBlock repeats:(BOOL)inRepeats {
+    void (^block)() = [inBlock copy];
+    id ret = [self scheduledTimerWithTimeInterval:inTimeInterval target:self selector:@selector(jdExecuteSimpleBlock:) userInfo:block repeats:inRepeats];
+    return ret;
+}
+
++(id)timerWithTimeInterval:(NSTimeInterval)inTimeInterval block:(void (^)())inBlock repeats:(BOOL)inRepeats {
+    void (^block)() = [inBlock copy];
+    id ret = [self timerWithTimeInterval:inTimeInterval target:self selector:@selector(jdExecuteSimpleBlock:) userInfo:block repeats:inRepeats];
+    return ret;
+}
+
++(void)jdExecuteSimpleBlock:(NSTimer *)inTimer;
+{
+    if([inTimer userInfo])
+    {
+        void (^block)() = (void (^)())[inTimer userInfo];
+        block();
+    }
+}
+@end
+
+@interface SBMediaController : NSObject
++ (void)sendResetPlaybackTimeoutCommand;
++ (void)interrupt;
++ (BOOL)applicationCanBeConsideredNowPlaying:(id)arg1;
++ (id)sharedInstance;
+@property(nonatomic, getter=isRingerMuted) BOOL ringerMuted;
+- (BOOL)muted;
+- (void)setVolume:(float)arg1;
+- (float)volume;
+- (BOOL)stop;
+- (BOOL)togglePlayPause;
+- (BOOL)pause;
+- (BOOL)play;
+- (BOOL)isRadioTrack;
+- (BOOL)isAdvertisement;
+- (BOOL)isTVOut;
+- (BOOL)isMovie;
+- (BOOL)isPaused;
+- (BOOL)isPlaying;
+- (BOOL)isLastTrack;
+- (BOOL)isFirstTrack;
+@end
 
 #define TouchIDFingerDown  1
 #define TouchIDFingerUp    0
@@ -15,6 +71,7 @@
 UIView *lockView = nil;
 PKGlyphView *fingerglyph = nil;
 SystemSoundID unlockSound;
+static AVAudioPlayer* audioPlayer;
 
 BOOL fingerAlreadyFailed;
 BOOL usingGlyph;
@@ -134,6 +191,7 @@ static void loadPreferences() {
 				break;
 			case TouchIDFingerUp:
 				// revert to state 0 here
+				break;
 		}
 	}
 }
@@ -147,6 +205,12 @@ static void loadPreferences() {
 	fingerglyph = nil;
 }*/
 
+%new
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    [session setActive:NO error:nil];
+    
+}
 %end
 
 %hook SBLockScreenView
@@ -170,6 +234,45 @@ static void loadPreferences() {
                                     CFNotificationSuspensionBehaviorCoalesce);
 	loadPreferences();
 	NSURL *pathURL = [NSURL fileURLWithPath: @"/System/Library/Frameworks/PassKit.framework/Payment_Success.wav"];
-	AudioServicesCreateSystemSoundID((__bridge CFURLRef) pathURL, &unlockSound);
+	AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:pathURL options:nil];
+    CMTime time = asset.duration;
+    double durationInSeconds = CMTimeGetSeconds(time);
+    if (![(SBMediaController *)[objc_getClass("SBMediaController") sharedInstance] isPlaying] && ![(SBMediaController *)[objc_getClass("SBMediaController") sharedInstance] isRingerMuted]) {
+		if (audioPlayer) {
+	        [audioPlayer stop];
+	        AVAudioSession *session = [AVAudioSession sharedInstance];
+	        [session setActive:NO error:nil];
+	        audioPlayer = nil;
+	    }
+	    
+	    audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:pathURL error:nil];
+	    [audioPlayer setDelegate:[[objc_getClass("SBLockScreenManager") alloc] init]];
+	    audioPlayer.volume = 0.5; //between 0 and 1
+	    AVAudioSession *session = [AVAudioSession sharedInstance];
+	    [session setActive:YES error:nil];
+	    [audioPlayer play];
+    } else if ([(SBMediaController *)[objc_getClass("SBMediaController") sharedInstance] isPlaying]){
+    	//
+        [(SBMediaController *)[objc_getClass("SBMediaController") sharedInstance] pause];
+		if (audioPlayer) {
+	        [audioPlayer stop];
+	        AVAudioSession *session = [AVAudioSession sharedInstance];
+	        [session setActive:NO error:nil];
+	        audioPlayer = nil;
+	    }
+	    
+	    audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:pathURL error:nil];
+	    [audioPlayer setDelegate:[[objc_getClass("SBLockScreenManager") alloc] init]];
+	    audioPlayer.volume = 0.5; //between 0 and 1
+	    AVAudioSession *session = [AVAudioSession sharedInstance];
+	    [session setActive:YES error:nil];
+	    [audioPlayer play];
+        [NSTimer scheduledTimerWithTimeInterval:durationInSeconds block:^{
+            [(SBMediaController *)[objc_getClass("SBMediaController") sharedInstance] togglePlayPause];
+        } repeats:NO];
+    } else if ([(SBMediaController *)[objc_getClass("SBMediaController") sharedInstance] isRingerMuted]) {
+        AudioServicesCreateSystemSoundID((__bridge CFURLRef) pathURL, &unlockSound);
+    }
+	// AudioServicesCreateSystemSoundID((__bridge CFURLRef) pathURL, &unlockSound);
 	[pool release];
 }

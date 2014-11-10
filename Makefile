@@ -2,7 +2,7 @@ include theos/makefiles/common.mk
 
 TWEAK_NAME = LockGlyph
 LockGlyph_FILES = Tweak.xm
-LockGlyph_FRAMEWORKS = UIKit CoreGraphics AudioToolbox AVFoundation
+LockGlyph_FRAMEWORKS = UIKit CoreGraphics AudioToolbox AVFoundation CoreMedia
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
